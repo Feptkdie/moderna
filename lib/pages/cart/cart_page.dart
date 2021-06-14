@@ -67,7 +67,7 @@ class _CartPageState extends State<CartPage> {
   Widget _items(double height, double width) => Expanded(
         child: ListView.builder(
           padding: EdgeInsets.zero,
-          itemCount: 10,
+          itemCount: 0,
           itemBuilder: (context, index) => Container(
             width: double.infinity,
             child: Column(

@@ -24,9 +24,9 @@ class _ProductDetailState extends State<ProductDetail> {
           width: width,
           child: Stack(
             children: [
-              _image(height, width),
+              _image(height, width, arguments['index2']),
               _topBar(height, width),
-              _information(height, width),
+              _information(height, width, arguments['index2']),
             ],
           ),
         ),
@@ -69,7 +69,7 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       );
 
-  Widget _information(double height, double width) => Align(
+  Widget _information(double height, double width, int index) => Align(
         alignment: Alignment.topCenter,
         child: Padding(
           padding: EdgeInsets.only(
@@ -86,7 +86,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      "Classic Leather Arm Chair",
+                      Data.productItems[index].title,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.black,
@@ -97,26 +97,33 @@ class _ProductDetailState extends State<ProductDetail> {
                   ),
                   Expanded(
                     flex: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text("         "),
-                        Image.asset(
-                          "assets/bottom3.png",
-                          height: height * 0.04,
-                        ),
-                        SizedBox(
-                          width: width * 0.02,
-                        ),
-                        Center(
-                          child: Text(
-                            "AR View",
-                            style: TextStyle(
-                              fontSize: height * 0.02,
+                    child: Material(
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.pushNamed(context, "/ar_page");
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text("         "),
+                            Image.asset(
+                              "assets/bottom3.png",
+                              height: height * 0.04,
                             ),
-                          ),
+                            SizedBox(
+                              width: width * 0.02,
+                            ),
+                            Center(
+                              child: Text(
+                                "AR View",
+                                style: TextStyle(
+                                  fontSize: height * 0.02,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
                   )
                 ],
@@ -127,7 +134,7 @@ class _ProductDetailState extends State<ProductDetail> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  "Germany",
+                  Data.productItems[index].subtitle,
                   style: TextStyle(
                     color: Colors.grey[700].withOpacity(0.5),
                     fontSize: height * 0.016,
@@ -180,10 +187,12 @@ class _ProductDetailState extends State<ProductDetail> {
                       ),
                     ],
                   ),
-                  Text(
-                    "500.000₮",
-                    style: TextStyle(fontSize: height * 0.03),
-                  )
+                  if (Data.productItems[index].price != null)
+                    Text(
+                      Data.productItems[index].price,
+                      style: TextStyle(fontSize: height * 0.03),
+                    ),
+                  if (Data.productItems[index].price == null) Text(""),
                 ],
               ),
               SizedBox(
@@ -236,7 +245,7 @@ class _ProductDetailState extends State<ProductDetail> {
                     right: 8.0,
                   ),
                   child: Text(
-                    """Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet. Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet. Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet. Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet.Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet. Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet. Apples are nutritious. Apples may be good for weight loss. apples may be good for your heart. As part of a healtful and varied diet.""",
+                    """${Data.productItems[index].content.toString()}""",
                     textAlign: TextAlign.justify,
                   ),
                 ),
@@ -246,7 +255,7 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       );
 
-  Widget _image(double height, double width) => Align(
+  Widget _image(double height, double width, int index) => Align(
         alignment: Alignment.topCenter,
         child: Stack(
           children: [
@@ -275,7 +284,7 @@ class _ProductDetailState extends State<ProductDetail> {
                       height: height * 0.24,
                       width: height * 0.4,
                       child: Image.network(
-                        "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                        Data.productItems[index].filePath.toString(),
                       ),
                     ),
                   ),

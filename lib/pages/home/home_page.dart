@@ -2,9 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:mod/constants.dart';
-import 'package:mod/pages/ar/ar_page.dart';
-import 'package:mod/pages/cart/cart_page.dart';
-import 'package:mod/pages/shop/shop_page.dart';
+import 'package:mod/models/product_model.dart';
 
 class HomePage extends StatefulWidget {
   static String routeName = "/home_page";
@@ -160,11 +158,12 @@ class _HomeState extends State<Home> {
           children: [
             Wrap(
               children: List.generate(
-                4,
+                Data.categoryItems.length,
                 (index) {
                   return Column(
                     children: [
-                      if (index != 2) _item(height, width, index),
+                      // if (index != 2)
+                      _item(height, width, index),
                       if (index == 2) _categoriesItem(height, width, index),
                     ],
                   );
@@ -217,7 +216,7 @@ class _HomeState extends State<Home> {
                 height: MediaQuery.of(context).size.height * 0.14,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: 3,
+                  itemCount: Data.categoryItems.length,
                   itemBuilder: (context, index2) => Padding(
                     padding: EdgeInsets.only(
                       left: width * 0.04,
@@ -259,8 +258,8 @@ class _HomeState extends State<Home> {
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
                                     child: CachedNetworkImage(
-                                      imageUrl:
-                                          "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                      imageUrl: Data.categoryItems[index2].image
+                                          .toString(),
                                       fit: BoxFit.cover,
                                     ),
                                   ),
@@ -276,7 +275,7 @@ class _HomeState extends State<Home> {
                                       child: Container(
                                         width: width * 0.28,
                                         child: Text(
-                                          "Germany",
+                                          Data.categoryItems[index2].name,
                                           overflow: TextOverflow.ellipsis,
                                           style: TextStyle(
                                             fontSize: height * 0.02,
@@ -367,7 +366,7 @@ class _HomeState extends State<Home> {
                     bottom: height * 0.01,
                   ),
                   child: Text(
-                    "Онцгой санал",
+                    Data.categoryItems[index].name,
                     style: TextStyle(
                       fontWeight: FontWeight.w400,
                       fontSize: MediaQuery.of(context).size.height * 0.022,
@@ -391,7 +390,7 @@ class _HomeState extends State<Home> {
                 height: MediaQuery.of(context).size.height * 0.3,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: 3,
+                  itemCount: Data.productItems.length,
                   itemBuilder: (context, index2) => Padding(
                     padding: EdgeInsets.only(
                       left: width * 0.04,
@@ -431,8 +430,8 @@ class _HomeState extends State<Home> {
                                 Expanded(
                                   flex: 2,
                                   child: CachedNetworkImage(
-                                    imageUrl:
-                                        "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                    imageUrl: Data.productItems[index2].filePath
+                                        .toString(),
                                     fit: BoxFit.cover,
                                   ),
                                 ),
@@ -452,7 +451,8 @@ class _HomeState extends State<Home> {
                                           child: Container(
                                             width: width * 0.3,
                                             child: Text(
-                                              "Vanna Boucle",
+                                              Data.productItems[index2].title
+                                                  .toString(),
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 fontSize: height * 0.02,
@@ -471,7 +471,8 @@ class _HomeState extends State<Home> {
                                           child: Container(
                                             width: width * 0.3,
                                             child: Text(
-                                              "Germany",
+                                              Data.productItems[index2].subtitle
+                                                  .toString(),
                                               overflow: TextOverflow.ellipsis,
                                               style: TextStyle(
                                                 fontSize: height * 0.017,
@@ -492,12 +493,20 @@ class _HomeState extends State<Home> {
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
                                           children: [
-                                            Text(
-                                              "500.000₮",
-                                              style: TextStyle(
-                                                fontSize: height * 0.018,
+                                            if (Data.productItems[index2]
+                                                    .price !=
+                                                null)
+                                              Text(
+                                                Data.productItems[index2].price
+                                                    .toString(),
+                                                style: TextStyle(
+                                                  fontSize: height * 0.018,
+                                                ),
                                               ),
-                                            ),
+                                            if (Data.productItems[index2]
+                                                    .price ==
+                                                null)
+                                              Text(""),
                                             Padding(
                                               padding: EdgeInsets.only(
                                                 top: height * 0.02,
@@ -540,7 +549,13 @@ class _HomeState extends State<Home> {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.pushNamed(
-                                      context, "/product_detail");
+                                    context,
+                                    "/product_detail",
+                                    arguments: {
+                                      'index2': index2,
+                                      'index': index
+                                    },
+                                  );
                                 },
                                 child: Container(
                                   width:
@@ -595,15 +610,15 @@ class _HomeState extends State<Home> {
           width: width,
           height: height * 0.1,
           child: Swiper(
-            autoplay: true,
+            autoplay: Data.bannerItems.length > 1,
             scale: 0.9,
-            itemCount: 3,
+            itemCount: Data.bannerItems.length,
             viewportFraction: 0.8,
             itemBuilder: (context, index) => Container(
               height: height * 0.1,
               width: width,
               child: Image.network(
-                "http://nicodays.com/banner.png",
+                Data.bannerItems[index].image.toString(),
                 fit: BoxFit.cover,
               ),
             ),

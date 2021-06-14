@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../constants.dart';
+
 class ShopItems extends StatefulWidget {
   static String routeName = "/shop_items";
   const ShopItems({Key key}) : super(key: key);
@@ -14,6 +16,7 @@ class _ShopItemsState extends State<ShopItems> {
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
+    final arguments = ModalRoute.of(context).settings.arguments as Map;
     return Scaffold(
       body: Container(
         height: height,
@@ -21,23 +24,23 @@ class _ShopItemsState extends State<ShopItems> {
         child: Column(
           children: <Widget>[
             _top(height, width),
-            _items(height, width),
+            _items(height, width, arguments["index"]),
           ],
         ),
       ),
     );
   }
 
-  Widget _items(double height, double width) => Expanded(
+  Widget _items(double height, double width, int index) => Expanded(
         child: ListView.builder(
           padding: EdgeInsets.zero,
-          itemCount: 10,
+          itemCount: Data.productItems.length,
           itemBuilder: (context, index) => Container(
             width: double.infinity,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (10 > index + index)
+                if (Data.productItems.length > index + index)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Stack(
@@ -70,8 +73,9 @@ class _ShopItemsState extends State<ShopItems> {
                                           height: height * 0.12,
                                           width: width * 0.32,
                                           child: CachedNetworkImage(
-                                            imageUrl:
-                                                "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                            imageUrl: Data
+                                                .productItems[index + index]
+                                                .filePath,
                                           ),
                                         ),
                                       ),
@@ -90,7 +94,7 @@ class _ShopItemsState extends State<ShopItems> {
                                   width: width * 0.38,
                                   child: Center(
                                     child: Text(
-                                      "Jingle",
+                                      Data.productItems[index + index].title,
                                       style: TextStyle(
                                         fontSize: 16.0,
                                         fontWeight: FontWeight.bold,
@@ -113,7 +117,10 @@ class _ShopItemsState extends State<ShopItems> {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.pushNamed(
-                                      context, "/product_detail");
+                                    context,
+                                    "/product_detail",
+                                    arguments: {'index2': index},
+                                  );
                                 },
                               ),
                             ),
@@ -122,7 +129,7 @@ class _ShopItemsState extends State<ShopItems> {
                       ],
                     ),
                   ),
-                if (10 > index + index + 1)
+                if (Data.productItems.length > index + index + 1)
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: ClipRRect(
@@ -159,8 +166,10 @@ class _ShopItemsState extends State<ShopItems> {
                                             height: height * 0.12,
                                             width: width * 0.32,
                                             child: CachedNetworkImage(
-                                              imageUrl:
-                                                  "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                              imageUrl: Data
+                                                  .productItems[
+                                                      index + index + 1]
+                                                  .filePath,
                                             ),
                                           ),
                                         ),
@@ -179,7 +188,8 @@ class _ShopItemsState extends State<ShopItems> {
                                     width: width * 0.38,
                                     child: Center(
                                       child: Text(
-                                        "Jingle",
+                                        Data.productItems[index + index + 1]
+                                            .title,
                                         style: TextStyle(
                                           fontSize: 16.0,
                                           fontWeight: FontWeight.bold,
@@ -198,7 +208,10 @@ class _ShopItemsState extends State<ShopItems> {
                               child: InkWell(
                                 onTap: () {
                                   Navigator.pushNamed(
-                                      context, "/product_detail");
+                                    context,
+                                    "/product_detail",
+                                    arguments: {'index2': index},
+                                  );
                                 },
                               ),
                             ),

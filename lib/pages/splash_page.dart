@@ -1,4 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:mod/models/banner_model.dart';
+import 'package:mod/models/categories_model.dart';
+import 'package:mod/models/product_model.dart';
+
+import '../constants.dart';
 
 class SplashPage extends StatefulWidget {
   static String routeName = "/splash_page";
@@ -10,12 +18,67 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  var response;
   // Serverees productuudiig duudan hadgalj baina
   Future<void> _initDataFromServer() async {
-    Future.delayed(
-      const Duration(milliseconds: 3500),
-      () => Navigator.pushReplacementNamed(context, "/onboard_page"),
-    );
+    response = await http.get("http://admin.moderna.mn/api/get-data", headers: {
+      // "Authorization": "Bearer ${Data.userToken}",
+      "Content-Type": "application/json"
+    });
+
+    try {
+      var _last;
+      _last = json.decode(response.body);
+      final _productData = json.encode(_last["infos"]);
+      final _categoryData = json.encode(_last["categories"]);
+      final _bannerData = json.encode(_last["banner"]["original"]);
+      List _items = json.decode(_productData);
+      Data.productItems.clear();
+      _items.forEach((element) {
+        ProductModel item = ProductModel(
+            id: element["id"],
+            title: element["title"].toString(),
+            subtitle: element["subtitle"].toString(),
+            fileMode: element["fileMode"].toString(),
+            filePath: element["filePath"].toString(),
+            content: element["content"].toString(),
+            createdAt: element["createdAt"].toString(),
+            categories: element["categories"] ?? [],
+            isSaw: false,
+            download_count: null,
+            model: null,
+            view_count: null,
+            price: element["price"]);
+
+        Data.productItems.add(item);
+      });
+
+      Data.categoryItems.clear();
+      _items.clear();
+      _items = json.decode(_categoryData);
+      _items.forEach((element) {
+        CategoriesModel item = CategoriesModel(
+          id: element["id"],
+          name: element["name"],
+          image: element["image"],
+          createdAt: element["createdAt"],
+        );
+
+        Data.categoryItems.add(item);
+      });
+
+      Data.bannerItems.clear();
+      _items.clear();
+      _items = json.decode(_bannerData);
+      _items.forEach((element) {
+        BannerModel item = BannerModel(image: element["image"]);
+        Data.bannerItems.add(item);
+      });
+
+      Navigator.pushReplacementNamed(context, "/onboard_page");
+    } catch (e) {
+      print("splash_page/ " + e.toString());
+    }
   }
 
   // Huudas unshihad ajilah function
