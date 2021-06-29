@@ -1,4 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+
+import 'package:moderna/helpers/app_preferences.dart';
+import 'package:moderna/pages/auth/widgeds/login_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constants.dart';
 
 class LoginPageDefault extends StatefulWidget {
   static String routeName = "/login_page_default";
@@ -13,6 +21,22 @@ class _LoginPageDefaultState extends State<LoginPageDefault> {
   final nameTEC = new TextEditingController();
   final passTEC = new TextEditingController();
   bool isShowPass = true;
+
+  _checkIsAlreadyLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final user = prefs.getString("user");
+    if (user != null) {
+      Data.user = user;
+      Navigator.pushReplacementNamed(context, "/home_page");
+    }
+  }
+
+  @override
+  void initState() {
+    _checkIsAlreadyLogin();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -88,6 +112,7 @@ class _LoginPageDefaultState extends State<LoginPageDefault> {
                 width: width * 0.91,
                 child: TextField(
                   controller: nameTEC,
+                  keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: "Имайл",
                     labelStyle: TextStyle(color: Colors.grey[400]),
@@ -173,32 +198,10 @@ class _LoginPageDefaultState extends State<LoginPageDefault> {
               SizedBox(
                 height: height * 0.03,
               ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  18.0,
-                ),
-                child: Container(
-                  height: height * 0.08,
-                  width: width * 0.9,
-                  child: Material(
-                    color: Colors.black,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushReplacementNamed(context, "/home_page");
-                      },
-                      child: Center(
-                        child: Text(
-                          "Нэвтрэх",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w300,
-                            fontSize: MediaQuery.of(context).size.height * 0.03,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              LoginButton(
+                email: nameTEC.text,
+                password: passTEC.text,
+                scaffoldKey: scaffoldKey,
               ),
               SizedBox(
                 height: height * 0.028,

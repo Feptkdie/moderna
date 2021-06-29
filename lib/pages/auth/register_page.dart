@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:moderna/pages/auth/widgeds/register_button.dart';
 
 class RegisterPage extends StatefulWidget {
   static String routeName = "/register_page";
@@ -11,9 +13,12 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final nameTEC = new TextEditingController();
+  final lastnameTEC = new TextEditingController();
   final emailTEC = new TextEditingController();
   final passTEC = new TextEditingController();
+  final phoneTEC = new TextEditingController();
   bool isShowPass = true;
+
   @override
   Widget build(BuildContext context) {
     double width = MediaQuery.of(context).size.width;
@@ -21,14 +26,15 @@ class _RegisterPageState extends State<RegisterPage> {
     return Scaffold(
       key: scaffoldKey,
       body: SingleChildScrollView(
-        child: Container(
-          height: height,
-          width: width,
-          child: Stack(
-            children: <Widget>[
-              _loginForm(height, width),
-            ],
-          ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              children: <Widget>[
+                _loginForm(height, width),
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -88,9 +94,30 @@ class _RegisterPageState extends State<RegisterPage> {
               Container(
                 width: width * 0.91,
                 child: TextField(
-                  controller: nameTEC,
+                  controller: lastnameTEC,
                   decoration: InputDecoration(
                     labelText: "Хэрэглэгчийн нэр",
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    disabledBorder: InputBorder.none,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Container(
+                width: width * 0.91,
+                height: 1.0,
+                color: Colors.black,
+                child: Text(""),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Container(
+                width: width * 0.91,
+                child: TextField(
+                  controller: nameTEC,
+                  decoration: InputDecoration(
+                    labelText: "Эцэг эхийн нэр",
                     labelStyle: TextStyle(color: Colors.grey[400]),
                     disabledBorder: InputBorder.none,
                     border: InputBorder.none,
@@ -112,6 +139,31 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: emailTEC,
                   decoration: InputDecoration(
                     labelText: "Имайл",
+                    labelStyle: TextStyle(color: Colors.grey[400]),
+                    disabledBorder: InputBorder.none,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              Container(
+                width: width * 0.91,
+                height: 1.0,
+                color: Colors.black,
+                child: Text(""),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Container(
+                width: width * 0.91,
+                child: TextField(
+                  controller: phoneTEC,
+                  keyboardType: TextInputType.phone,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                  ],
+                  decoration: InputDecoration(
+                    labelText: "phone",
                     labelStyle: TextStyle(color: Colors.grey[400]),
                     disabledBorder: InputBorder.none,
                     border: InputBorder.none,
@@ -228,32 +280,13 @@ class _RegisterPageState extends State<RegisterPage> {
               SizedBox(
                 height: height * 0.03,
               ),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(
-                  18.0,
-                ),
-                child: Container(
-                  height: height * 0.08,
-                  width: width * 0.9,
-                  child: Material(
-                    color: Colors.black,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
-                      },
-                      child: Center(
-                        child: Text(
-                          "Бүртгүүлэх",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w300,
-                            fontSize: MediaQuery.of(context).size.height * 0.03,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+              RegisterButton(
+                email: emailTEC.text,
+                password: passTEC.text,
+                phone: phoneTEC.text,
+                firstName: nameTEC.text,
+                lastName: lastnameTEC.text,
+                scaffoldKey: scaffoldKey,
               ),
               SizedBox(
                 height: height * 0.028,
@@ -278,6 +311,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                   ),
                 ],
+              ),
+              SizedBox(
+                height: height * 0.1,
               ),
             ],
           ),

@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:mod/helpers/app_preferences.dart';
+import 'package:moderna/helpers/app_preferences.dart';
 
 class CartPage extends StatefulWidget {
   static String routeName = "/cart_page";

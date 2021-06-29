@@ -13,4 +13,5 @@ class Data {
   static List<CategoriesModel> categoryItems = [];
   static List<BannerModel> bannerItems = [];
   static bool isUnityLoad = false;
+  static var user;
 }

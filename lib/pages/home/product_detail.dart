@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mod/constants.dart';
+import 'package:moderna/constants.dart';
 
 class ProductDetail extends StatefulWidget {
   static String routeName = "/product_detail";

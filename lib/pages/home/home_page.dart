@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:mod/constants.dart';
-import 'package:mod/models/product_model.dart';
+import 'package:moderna/constants.dart';
+import 'package:moderna/models/product_model.dart';
 
 class HomePage extends StatefulWidget {
   static String routeName = "/home_page";
@@ -646,7 +646,9 @@ class _HomeState extends State<Home> {
               ),
               IconButton(
                 icon: Image.asset("assets/person.png"),
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.pushNamed(context, "/profile_page");
+                },
                 color: Colors.black,
                 iconSize: height * 0.05,
               ),
@@ -672,7 +674,7 @@ https://www.dan-form.com/media/h2vavjhh/embrace-chair-vintage-grey-art-leather-w
 
   First design
   import 'package:flutter/material.dart';
-import 'package:mod/constants.dart';
+import 'package:moderna/constants.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {

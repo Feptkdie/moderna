@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mod/models/banner_model.dart';
-import 'package:mod/models/categories_model.dart';
-import 'package:mod/models/product_model.dart';
+import 'package:moderna/models/banner_model.dart';
+import 'package:moderna/models/categories_model.dart';
+import 'package:moderna/models/product_model.dart';
 
 import '../constants.dart';
 
@@ -21,7 +21,8 @@ class _SplashPageState extends State<SplashPage> {
   var response;
   // Serverees productuudiig duudan hadgalj baina
   Future<void> _initDataFromServer() async {
-    response = await http.get("http://admin.moderna.mn/api/get-data", headers: {
+    response = await http
+        .get(Uri.parse("https://admin.moderna.mn/api/get-data"), headers: {
       // "Authorization": "Bearer ${Data.userToken}",
       "Content-Type": "application/json"
     });

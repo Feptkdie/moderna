@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:math' as math;
-import 'package:mod/helpers/app_preferences.dart';
+import 'package:moderna/helpers/app_preferences.dart';
 
 class VerifyPhonePage extends StatefulWidget {
   static String routeName = "/verify_phone_page";

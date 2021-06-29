@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_unity_widget/flutter_unity_widget.dart';
-import 'package:mod/constants.dart';
+// import 'package:flutter_unity_widget/flutter_unity_widget.dart';
+import 'package:moderna/constants.dart';
 import 'package:http/http.dart' as http;
 
 class ArPage extends StatefulWidget {
@@ -12,10 +12,10 @@ class ArPage extends StatefulWidget {
 }
 
 class _ArPageState extends State<ArPage> {
-  UnityWidgetController _controller;
+  // UnityWidgetController _controller;
 
   void onUnityCreated(controller) {
-    this._controller = controller;
+    // this._controller = controller;
   }
 
   @override
@@ -34,12 +34,12 @@ class _ArPageState extends State<ArPage> {
             child: Column(
               children: <Widget>[
                 _top(height, width),
-                Expanded(
-                  child: UnityWidget(
-                    onUnityCreated: onUnityCreated,
-                    fullscreen: false,
-                  ),
-                ),
+                // Expanded(
+                //   child: UnityWidget(
+                //     onUnityCreated: onUnityCreated,
+                //     fullscreen: false,
+                //   ),
+                // ),
               ],
             ),
           ),
