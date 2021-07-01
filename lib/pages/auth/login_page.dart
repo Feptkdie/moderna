@@ -21,6 +21,7 @@ class _LoginPageState extends State<LoginPage> {
     final prefs = await SharedPreferences.getInstance();
     final user = prefs.getString("user");
     if (user != null) {
+      print(user.toString());
       Data.user = user;
       Navigator.pushReplacementNamed(context, "/home_page");
     }

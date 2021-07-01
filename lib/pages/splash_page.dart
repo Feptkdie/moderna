@@ -37,6 +37,8 @@ class _SplashPageState extends State<SplashPage> {
       Data.productItems.clear();
       _items.forEach((element) {
         ProductModel item = ProductModel(
+            count: 0,
+            isFavorite: false,
             id: element["id"],
             title: element["title"].toString(),
             subtitle: element["subtitle"].toString(),
@@ -49,7 +51,8 @@ class _SplashPageState extends State<SplashPage> {
             download_count: null,
             model: null,
             view_count: null,
-            price: element["price"]);
+            price: element["price"],
+            isCart: false);
 
         Data.productItems.add(item);
       });

@@ -17,6 +17,12 @@ class ProfilePage extends StatefulWidget {
 class _ProfilePageState extends State<ProfilePage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final _user = json.decode(Data.user);
+
+  Future<void> _removeUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString("user", null);
+  }
+
   @override
   void initState() {
     print(Data.user);
@@ -230,9 +236,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Material(
                   color: Colors.black.withOpacity(0.1),
                   child: InkWell(
-                    onTap: () async {
-                      final prefs = await SharedPreferences.getInstance();
-                      prefs.setString("user", null);
+                    onTap: () {
+                      _removeUserData();
                       Navigator.of(context).pushNamedAndRemoveUntil(
                           "/login_page_default",
                           (Route<dynamic> route) => false);

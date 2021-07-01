@@ -616,7 +616,7 @@ class _ShopPageState extends State<ShopPage> {
 
   Widget _top(double height, double width) => Padding(
         padding: EdgeInsets.only(
-          top: height * 0.08,
+          top: height * 0.07,
           left: width * 0.02,
           right: width * 0.02,
         ),

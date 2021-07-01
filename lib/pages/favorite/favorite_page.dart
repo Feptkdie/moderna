@@ -1,5 +1,12 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:moderna/models/product_model.dart';
+import 'package:moderna/pages/favorite/favorite_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constants.dart';
 
 class FavoritePage extends StatefulWidget {
   static String routeName = "/favorite_page";
@@ -10,6 +17,61 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
+  List<ProductModel> favList2 = [];
+  bool isCheck = false;
+  final _user = json.decode(Data.user);
+
+  Future<void> _saveProduct(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "fav";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+
+    var existingCall = favList2.firstWhere(
+        (favCall) => favCall.id == favList2[index].id,
+        orElse: () => null);
+
+    if (existingCall != null) {
+      favList2.removeWhere((favCall) => favCall.id == favList2[index].id);
+    }
+
+    String encodeCalls = json.encode(
+      favList2.map<Map<String, dynamic>>((call) => call.toMap(call)).toList(),
+    );
+    // print(encodeCalls);
+
+    setState(() {
+      prefs.setString(prebString, encodeCalls);
+    });
+  }
+
+  Future<void> _isFavoriteCheck() async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "fav";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+
+    String checkCalls = prefs.getString(prebString) ?? null;
+
+    if (checkCalls != null) {
+      favList2 = (json.decode(checkCalls) as List)
+          .map((call) => ProductModel.fromJson(call))
+          .toList();
+
+      setState(() {
+        isCheck = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    _isFavoriteCheck();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -21,7 +83,7 @@ class _FavoritePageState extends State<FavoritePage> {
         child: Column(
           children: <Widget>[
             _top(height, width),
-            _items(height, width),
+            if (isCheck) _items(height, width),
           ],
         ),
       ),
@@ -31,7 +93,7 @@ class _FavoritePageState extends State<FavoritePage> {
   Widget _items(double height, double width) => Expanded(
         child: ListView.builder(
           padding: EdgeInsets.zero,
-          itemCount: 0,
+          itemCount: favList2.length,
           itemBuilder: (context, index) => Container(
             width: double.infinity,
             child: Column(
@@ -60,8 +122,7 @@ class _FavoritePageState extends State<FavoritePage> {
                                           height: height * 0.12,
                                           width: width * 0.32,
                                           child: CachedNetworkImage(
-                                            imageUrl:
-                                                "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                            imageUrl: favList2[index].filePath,
                                           ),
                                         ),
                                       ),
@@ -84,7 +145,7 @@ class _FavoritePageState extends State<FavoritePage> {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "Jingle",
+                                          favList2[index].title,
                                           style: TextStyle(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.bold,
@@ -95,7 +156,7 @@ class _FavoritePageState extends State<FavoritePage> {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "Germany",
+                                          favList2[index].categories[0]["name"],
                                           style: TextStyle(
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.w300,
@@ -105,14 +166,15 @@ class _FavoritePageState extends State<FavoritePage> {
                                         ),
                                       ),
                                       SizedBox(height: height * 0.02),
-                                      Align(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          "500.000₮",
-                                          style: TextStyle(
-                                              fontSize: height * 0.02),
+                                      if (favList2[index].price != null)
+                                        Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            favList2[index].price.toString(),
+                                            style: TextStyle(
+                                                fontSize: height * 0.02),
+                                          ),
                                         ),
-                                      ),
                                     ],
                                   ),
                                 ),
@@ -129,8 +191,14 @@ class _FavoritePageState extends State<FavoritePage> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(
-                                      context, "/product_detail");
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => FavoriteDetail(
+                                        product: favList2[index],
+                                      ),
+                                    ),
+                                  );
                                 },
                               ),
                             ),
@@ -147,7 +215,10 @@ class _FavoritePageState extends State<FavoritePage> {
                                 Icons.favorite,
                                 color: Colors.black,
                               ),
-                              onPressed: () {},
+                              onPressed: () {
+                                favList2[index].isFavorite = false;
+                                _saveProduct(index);
+                              },
                             ),
                           ),
                         ),
@@ -164,7 +235,7 @@ class _FavoritePageState extends State<FavoritePage> {
 
   Widget _top(double height, double width) => Padding(
         padding: EdgeInsets.only(
-          top: height * 0.09,
+          top: height * 0.07,
           left: width * 0.02,
           right: width * 0.02,
         ),

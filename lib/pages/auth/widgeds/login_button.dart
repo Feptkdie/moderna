@@ -24,11 +24,19 @@ class LoginButton extends StatefulWidget {
 
 class _LoginButtonState extends State<LoginButton> {
   bool isLoad = false;
+
+  Future<dynamic> _saveUserData(var user) async {
+    print("user data = " + user.toString());
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setString("user", user.toString());
+  }
+
   Future<void> _login() async {
-    setState(() {
-      isLoad = true;
-    });
     if (widget.email.isNotEmpty && widget.password.isNotEmpty) {
+      setState(() {
+        isLoad = true;
+      });
       var last = await http.post(
         Uri.parse("https://admin.moderna.mn/api/login"),
         // headers: {"Content-Type": "application/json"},
@@ -42,14 +50,11 @@ class _LoginButtonState extends State<LoginButton> {
         });
       } else {
         if (last.statusCode == 200) {
+          Data.user = last.body;
+          _saveUserData(last.body);
           setState(() {
             isLoad = false;
           });
-          Data.user = last.body;
-          final prefs = await SharedPreferences.getInstance();
-
-          prefs.setString("user", last.body.toString());
-
           Navigator.pushReplacementNamed(context, "/home_page");
         } else {
           setState(() {
@@ -60,11 +65,8 @@ class _LoginButtonState extends State<LoginButton> {
         }
       }
     } else {
-      setState(() {
-        isLoad = false;
-        AppPreferences.showSnackBar(
-            "Бүх хэсэгийг бөглөнө үү!", widget.scaffoldKey);
-      });
+      AppPreferences.showSnackBar(
+          "Бүх хэсэгийг бөглөнө үү!", widget.scaffoldKey);
     }
   }
 

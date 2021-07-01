@@ -1,6 +1,13 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:moderna/helpers/app_preferences.dart';
+import 'package:moderna/models/product_model.dart';
+import 'package:moderna/pages/cart/cart_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constants.dart';
 
 class CartPage extends StatefulWidget {
   static String routeName = "/cart_page";
@@ -13,52 +20,127 @@ class CartPage extends StatefulWidget {
 class _CartPageState extends State<CartPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   int count = 1;
+  List<ProductModel> favList2 = [];
+  bool isCheck = false;
+  final _user = json.decode(Data.user);
+
+  Future<void> _saveProduct(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "cart";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+
+    var existingCall = favList2.firstWhere(
+        (favCall) => favCall.id == favList2[index].id,
+        orElse: () => null);
+
+    if (existingCall != null) {
+      favList2.removeWhere((favCall) => favCall.id == favList2[index].id);
+    }
+
+    String encodeCalls = json.encode(
+      favList2.map<Map<String, dynamic>>((call) => call.toMap(call)).toList(),
+    );
+    // print(encodeCalls);
+
+    setState(() {
+      prefs.setString(prebString, encodeCalls);
+    });
+  }
+
+  Future<void> _isFavoriteCheck() async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "cart";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+
+    String checkCalls = prefs.getString(prebString) ?? null;
+
+    if (checkCalls != null) {
+      favList2 = (json.decode(checkCalls) as List)
+          .map((call) => ProductModel.fromJson(call))
+          .toList();
+
+      setState(() {
+        isCheck = true;
+      });
+    }
+  }
+
+  _clearCart() async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "cart";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+    prefs.setString(prebString, null);
+  }
+
+  @override
+  void initState() {
+    _isFavoriteCheck();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    return Scaffold(
-      key: scaffoldKey,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            height: height * 0.07,
-            width: width * 0.9,
-            child: FloatingActionButton.extended(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(15.0),
+    return WillPopScope(
+      onWillPop: () {
+        for (int i = 0; i < Data.productItems.length; i++) {
+          Data.productItems[i].isCart = false;
+        }
+        Navigator.pop(context);
+      },
+      child: Scaffold(
+        key: scaffoldKey,
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+        floatingActionButton: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              height: height * 0.07,
+              width: width * 0.9,
+              child: FloatingActionButton.extended(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(
+                    Radius.circular(15.0),
+                  ),
                 ),
-              ),
-              backgroundColor: Colors.black,
-              heroTag: null,
-              onPressed: () {
-                AppPreferences.showSnackBar(
-                  "Та эхлээд нэвтэрнэ үү",
-                  scaffoldKey,
-                );
-              },
-              label: Text(
-                "Худалдан авалт хийх",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: height * 0.022,
+                backgroundColor: Colors.black,
+                heroTag: null,
+                onPressed: () {
+                  _clearCart();
+                  AppPreferences.showSnackBar(
+                    "Амжилттай боллоо",
+                    scaffoldKey,
+                  );
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      "/home_page", (Route<dynamic> route) => false);
+                },
+                label: Text(
+                  "Худалдан авалт хийх",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: height * 0.022,
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: Container(
-        height: height,
-        width: width,
-        child: Column(
-          children: <Widget>[
-            _top(height, width),
-            _items(height, width),
           ],
+        ),
+        body: Container(
+          height: height,
+          width: width,
+          child: Column(
+            children: <Widget>[
+              _top(height, width),
+              _items(height, width),
+            ],
+          ),
         ),
       ),
     );
@@ -67,7 +149,7 @@ class _CartPageState extends State<CartPage> {
   Widget _items(double height, double width) => Expanded(
         child: ListView.builder(
           padding: EdgeInsets.zero,
-          itemCount: 0,
+          itemCount: favList2.length,
           itemBuilder: (context, index) => Container(
             width: double.infinity,
             child: Column(
@@ -96,8 +178,7 @@ class _CartPageState extends State<CartPage> {
                                           height: height * 0.12,
                                           width: width * 0.32,
                                           child: CachedNetworkImage(
-                                            imageUrl:
-                                                "https://admincms.carlhansen.com/globalassets/products/chairs/e005/embrace-chair-eg-saebe-loke7748.png?aspect=16:9&device=desktop&size=medium&display=standard",
+                                            imageUrl: favList2[index].filePath,
                                           ),
                                         ),
                                       ),
@@ -120,7 +201,7 @@ class _CartPageState extends State<CartPage> {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "Jingle",
+                                          favList2[index].title.toString(),
                                           style: TextStyle(
                                             fontSize: 16.0,
                                             fontWeight: FontWeight.bold,
@@ -131,7 +212,7 @@ class _CartPageState extends State<CartPage> {
                                       Align(
                                         alignment: Alignment.centerLeft,
                                         child: Text(
-                                          "Germany",
+                                          favList2[index].categories[0]["name"],
                                           style: TextStyle(
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.w300,
@@ -197,8 +278,12 @@ class _CartPageState extends State<CartPage> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(
-                                      context, "/product_detail");
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => CartDetail(
+                                                product: favList2[index],
+                                              )));
                                 },
                               ),
                             ),
@@ -218,7 +303,8 @@ class _CartPageState extends State<CartPage> {
                                   icon: Icon(Icons.remove),
                                   onPressed: () {
                                     setState(() {
-                                      if (count > 1) count--;
+                                      if (favList2[index].count > 1)
+                                        favList2[index].count--;
                                     });
                                   },
                                 ),
@@ -234,7 +320,7 @@ class _CartPageState extends State<CartPage> {
                                   ),
                                   child: Center(
                                     child: Text(
-                                      count.toString(),
+                                      favList2[index].count.toString(),
                                       style: TextStyle(
                                         fontSize: height * 0.024,
                                       ),
@@ -248,7 +334,7 @@ class _CartPageState extends State<CartPage> {
                                   ),
                                   onPressed: () {
                                     setState(() {
-                                      count++;
+                                      favList2[index].count++;
                                     });
                                   },
                                 ),
@@ -267,21 +353,25 @@ class _CartPageState extends State<CartPage> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            onPressed: () {},
+                            onPressed: () {
+                              favList2[index].isCart = false;
+                              _saveProduct(index);
+                            },
                           ),
                         ),
-                        Align(
-                          alignment: Alignment.bottomRight,
-                          child: Padding(
-                              padding: EdgeInsets.only(
-                                left: width * 0.21,
-                                bottom: height * 0.02,
-                              ),
-                              child: Text(
-                                "500.000₮",
-                                style: TextStyle(fontSize: height * 0.02),
-                              )),
-                        ),
+                        if (favList2[index].price != null)
+                          Align(
+                            alignment: Alignment.bottomRight,
+                            child: Padding(
+                                padding: EdgeInsets.only(
+                                  left: width * 0.21,
+                                  bottom: height * 0.02,
+                                ),
+                                child: Text(
+                                  "500.000₮",
+                                  style: TextStyle(fontSize: height * 0.02),
+                                )),
+                          ),
                       ],
                     ),
                   ),
@@ -297,7 +387,7 @@ class _CartPageState extends State<CartPage> {
         children: [
           Padding(
             padding: EdgeInsets.only(
-              top: height * 0.09,
+              top: height * 0.07,
               left: width * 0.02,
               right: width * 0.02,
             ),
@@ -309,6 +399,9 @@ class _CartPageState extends State<CartPage> {
                     Icons.arrow_back_ios,
                   ),
                   onPressed: () {
+                    for (int i = 0; i < Data.productItems.length; i++) {
+                      Data.productItems[i].isCart = false;
+                    }
                     Navigator.pop(context);
                   },
                 ),

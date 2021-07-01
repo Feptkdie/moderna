@@ -2,21 +2,19 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:moderna/constants.dart';
-import 'package:moderna/helpers/app_preferences.dart';
 import 'package:moderna/models/product_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProductDetail extends StatefulWidget {
+class CartDetail extends StatefulWidget {
   static String routeName = "/product_detail";
-  final int index;
-  const ProductDetail({Key key, this.index}) : super(key: key);
+  final ProductModel product;
+  const CartDetail({Key key, this.product}) : super(key: key);
 
   @override
-  _ProductDetailState createState() => _ProductDetailState();
+  _CartDetailState createState() => _CartDetailState();
 }
 
-class _ProductDetailState extends State<ProductDetail> {
-  final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+class _CartDetailState extends State<CartDetail> {
   int count = 1;
   bool isCheck = false;
   bool showDescription = true;
@@ -25,7 +23,7 @@ class _ProductDetailState extends State<ProductDetail> {
   List<ProductModel> favList;
   List<ProductModel> favList2;
 
-  Future<void> _saveProduct(int index) async {
+  Future<void> _saveProduct2() async {
     final prefs = await SharedPreferences.getInstance();
     String prebString = "fav";
     // prefs.clear();
@@ -42,17 +40,16 @@ class _ProductDetailState extends State<ProductDetail> {
     }
 
     var existingCall = favList2.firstWhere(
-        (favCall) => favCall.id == Data.productItems[index].id,
+        (favCall) => favCall.id == widget.product.id,
         orElse: () => null);
 
-    if (Data.productItems[index].isFavorite) {
+    if (widget.product.isFavorite) {
       if (existingCall == null) {
-        favList2.add(Data.productItems[index]);
+        favList2.add(widget.product);
       }
     } else {
       if (existingCall != null) {
-        favList2.removeWhere(
-            (favCall) => favCall.id == Data.productItems[index].id);
+        favList2.removeWhere((favCall) => favCall.id == widget.product.id);
       }
     }
 
@@ -71,7 +68,7 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
-  Future<void> _saveProductCart(int index) async {
+  Future<void> _saveProduct() async {
     final prefs = await SharedPreferences.getInstance();
     String prebString = "cart";
     // prefs.clear();
@@ -88,26 +85,18 @@ class _ProductDetailState extends State<ProductDetail> {
     }
 
     var existingCall = favList2.firstWhere(
-        (favCall) => favCall.id == Data.productItems[index].id,
+        (favCall) => favCall.id == widget.product.id,
         orElse: () => null);
 
-    if (Data.productItems[index].isCart) {
+    if (widget.product.isFavorite) {
       if (existingCall == null) {
-        favList2.add(Data.productItems[index]);
-        AppPreferences.showSnackBar(
-          "Сагсанд нэмэгдлээ",
-          scaffoldKey,
-        );
+        favList2.add(widget.product);
       }
     } else {
       if (existingCall != null) {
-        favList2.removeWhere(
-            (favCall) => favCall.id == Data.productItems[index].id);
-
-        AppPreferences.showSnackBar(
-          "Сагснаас хасагдлаа",
-          scaffoldKey,
-        );
+        favList2.removeWhere((favCall) => favCall.id == widget.product.id);
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            "/home_page", (Route<dynamic> route) => false);
       }
     }
 
@@ -126,67 +115,21 @@ class _ProductDetailState extends State<ProductDetail> {
     }
   }
 
-  Future<void> _isFavoriteCheck() async {
-    final prefs = await SharedPreferences.getInstance();
-    String prebString = "fav";
-    // prefs.clear();
-
-    if (_user != null) prebString += _user["user"]["id"].toString();
-
-    String checkCalls = prefs.getString(prebString) ?? null;
-
-    if (checkCalls != null) {
-      favList2 = (json.decode(checkCalls) as List)
-          .map((call) => ProductModel.fromJson(call))
-          .toList();
-
-      var existingCall = favList2.firstWhere(
-          (favCall) => favCall.id == Data.productItems[widget.index].id,
-          orElse: () => null);
-
-      if (existingCall != null) {
-        Data.productItems[widget.index].isFavorite = true;
-      } else {
-        Data.productItems[widget.index].isFavorite = false;
-      }
-    }
-    setState(() {
-      isCheck = true;
-    });
-    print(checkCalls.toString());
-  }
-
-  @override
-  void initState() {
-    _isFavoriteCheck();
-    Data.productItems[widget.index].isCart = false;
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
-    return WillPopScope(
-      onWillPop: () {
-        for (int i = 0; i < Data.productItems.length; i++) {
-          Data.productItems[i].isCart = false;
-        }
-        Navigator.pop(context);
-      },
-      child: Scaffold(
-        key: scaffoldKey,
-        backgroundColor: kBackgroundColor,
-        body: SingleChildScrollView(
-          child: Container(
-            width: width,
-            child: Stack(
-              children: [
-                _image(height, width, widget.index),
-                if (isCheck) _topBar(height, width, widget.index),
-                _information(height, width, widget.index),
-              ],
-            ),
+    return Scaffold(
+      backgroundColor: kBackgroundColor,
+      body: SingleChildScrollView(
+        child: Container(
+          width: width,
+          child: Stack(
+            children: [
+              _image(height, width, widget.product),
+              _topBar(height, width),
+              _information(height, width, widget.product),
+            ],
           ),
         ),
       ),
@@ -211,15 +154,11 @@ class _ProductDetailState extends State<ProductDetail> {
                 color: Colors.black,
                 child: InkWell(
                   onTap: () {
-                    if (Data.productItems[widget.index].isCart)
-                      Data.productItems[widget.index].isCart = false;
-                    else
-                      Data.productItems[widget.index].isCart = true;
-                    _saveProductCart(widget.index);
+                    _saveProduct();
                   },
                   child: Center(
                     child: Text(
-                      "Сагсанд нэмэх",
+                      "Сагснаас хасах",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w300,
@@ -234,7 +173,8 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       );
 
-  Widget _information(double height, double width, int index) => Align(
+  Widget _information(double height, double width, ProductModel product) =>
+      Align(
         alignment: Alignment.topCenter,
         child: Padding(
           padding: EdgeInsets.only(
@@ -251,7 +191,7 @@ class _ProductDetailState extends State<ProductDetail> {
                   Expanded(
                     flex: 2,
                     child: Text(
-                      Data.productItems[index].title,
+                      product.title,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: Colors.black,
@@ -299,7 +239,7 @@ class _ProductDetailState extends State<ProductDetail> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  Data.productItems[index].subtitle,
+                  product.subtitle,
                   style: TextStyle(
                     color: Colors.grey[700].withOpacity(0.5),
                     fontSize: height * 0.016,
@@ -319,8 +259,7 @@ class _ProductDetailState extends State<ProductDetail> {
                         icon: Icon(Icons.remove),
                         onPressed: () {
                           setState(() {
-                            if (Data.productItems[index].count > 1)
-                              Data.productItems[index].count--;
+                            if (product.count > 1) product.count--;
                           });
                         },
                       ),
@@ -336,7 +275,7 @@ class _ProductDetailState extends State<ProductDetail> {
                         ),
                         child: Center(
                           child: Text(
-                            Data.productItems[index].count.toString(),
+                            product.count.toString(),
                             style: TextStyle(
                               fontSize: height * 0.024,
                             ),
@@ -347,18 +286,18 @@ class _ProductDetailState extends State<ProductDetail> {
                         icon: Icon(Icons.add),
                         onPressed: () {
                           setState(() {
-                            Data.productItems[index].count++;
+                            product.count++;
                           });
                         },
                       ),
                     ],
                   ),
-                  if (Data.productItems[index].price != null)
+                  if (product.price != null)
                     Text(
-                      Data.productItems[index].price,
+                      product.price,
                       style: TextStyle(fontSize: height * 0.03),
                     ),
-                  if (Data.productItems[index].price == null) Text(""),
+                  if (product.price == null) Text(""),
                 ],
               ),
               SizedBox(
@@ -411,7 +350,7 @@ class _ProductDetailState extends State<ProductDetail> {
                     right: 8.0,
                   ),
                   child: Text(
-                    """${Data.productItems[index].content.toString()}""",
+                    """${product.content.toString()}""",
                     textAlign: TextAlign.justify,
                   ),
                 ),
@@ -421,7 +360,7 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       );
 
-  Widget _image(double height, double width, int index) => Align(
+  Widget _image(double height, double width, ProductModel product) => Align(
         alignment: Alignment.topCenter,
         child: Stack(
           children: [
@@ -450,7 +389,7 @@ class _ProductDetailState extends State<ProductDetail> {
                       height: height * 0.24,
                       width: height * 0.4,
                       child: Image.network(
-                        Data.productItems[index].filePath.toString(),
+                        product.filePath.toString(),
                       ),
                     ),
                   ),
@@ -461,7 +400,7 @@ class _ProductDetailState extends State<ProductDetail> {
         ),
       );
 
-  Widget _topBar(double height, double width, int index) => Padding(
+  Widget _topBar(double height, double width) => Padding(
         padding: EdgeInsets.only(top: height * 0.07),
         child: Container(
           width: width,
@@ -477,9 +416,6 @@ class _ProductDetailState extends State<ProductDetail> {
                   IconButton(
                     icon: Icon(Icons.arrow_back_ios),
                     onPressed: () {
-                      for (int i = 0; i < Data.productItems.length; i++) {
-                        Data.productItems[i].isCart = false;
-                      }
                       Navigator.pop(context);
                     },
                     color: Colors.black,
@@ -499,14 +435,14 @@ class _ProductDetailState extends State<ProductDetail> {
               SizedBox(
                 width: width * 0.44,
               ),
-              if (Data.productItems[index].isFavorite)
+              if (widget.product.isFavorite)
                 Row(
                   children: [
                     IconButton(
                       icon: Icon(Icons.favorite),
                       onPressed: () {
-                        Data.productItems[index].isFavorite = false;
-                        _saveProduct(index);
+                        widget.product.isFavorite = false;
+                        _saveProduct2();
                         setState(() {});
                       },
                       color: Colors.black,
@@ -516,14 +452,14 @@ class _ProductDetailState extends State<ProductDetail> {
                     ),
                   ],
                 ),
-              if (!Data.productItems[index].isFavorite)
+              if (!widget.product.isFavorite)
                 Row(
                   children: [
                     IconButton(
                       icon: Icon(Icons.favorite_border),
                       onPressed: () {
-                        Data.productItems[index].isFavorite = true;
-                        _saveProduct(index);
+                        widget.product.isFavorite = true;
+                        _saveProduct2();
                         setState(() {});
                       },
                       color: Colors.black,

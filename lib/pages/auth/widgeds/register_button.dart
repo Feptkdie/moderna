@@ -30,12 +30,23 @@ class RegisterButton extends StatefulWidget {
 
 class _RegisterButtonState extends State<RegisterButton> {
   bool isLoad = false;
+
+  Future<dynamic> _saveUserData(var user) async {
+    print("user data = " + user.toString());
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setString("user", user.toString());
+  }
+
   Future<void> _register() async {
     if (widget.firstName.isNotEmpty &&
         widget.lastName.isNotEmpty &&
         widget.email.isNotEmpty &&
         widget.phone.isNotEmpty &&
         widget.password.isNotEmpty) {
+      setState(() {
+        isLoad = true;
+      });
       var last = await http.post(
         Uri.parse("https://admin.moderna.mn/api/register"),
         // headers: {"Content-Type": "application/json"},
@@ -52,12 +63,17 @@ class _RegisterButtonState extends State<RegisterButton> {
             "Алдаа гарлаа дахин оролдоно уу!", widget.scaffoldKey);
       } else {
         if (last.statusCode == 200) {
-          final prefs = await SharedPreferences.getInstance();
-          prefs.setString("user", last.body.toString());
+          _saveUserData(last.body);
 
           Data.user = last.body;
+          setState(() {
+            isLoad = false;
+          });
           Navigator.pushReplacementNamed(context, "/home_page");
         } else {
+          setState(() {
+            isLoad = false;
+          });
           AppPreferences.showSnackBar(
               "Алдаа гарлаа дахин оролдоно уу!", widget.scaffoldKey);
         }

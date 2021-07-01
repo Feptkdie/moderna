@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:moderna/constants.dart';
+import 'package:moderna/helpers/app_preferences.dart';
 import 'package:moderna/models/product_model.dart';
+import 'package:moderna/pages/home/product_detail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   static String routeName = "/home_page";
@@ -107,9 +112,69 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  int count = 1;
+  bool isCheck = false;
+  bool showDescription = true;
+  String checkCalls;
+  final _user = json.decode(Data.user);
+  List<ProductModel> favList;
+  List<ProductModel> favList2;
   int currentFilterIndex = 0;
   final _searchTEC = new TextEditingController();
   GlobalKey<ScaffoldState> _key = new GlobalKey<ScaffoldState>();
+
+  Future<void> _saveProductCart(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "cart";
+    // prefs.clear();
+
+    if (_user != null) prebString += _user["user"]["id"].toString();
+
+    List<ProductModel> favList2 = <ProductModel>[];
+    String checkCalls2 = (prefs.getString(prebString) ?? null);
+
+    if (checkCalls2 != null) {
+      favList2 = (json.decode(checkCalls2) as List)
+          .map((call) => ProductModel.fromJson(call))
+          .toList();
+    }
+
+    var existingCall = favList2.firstWhere(
+        (favCall) => favCall.id == Data.productItems[index].id,
+        orElse: () => null);
+
+    if (Data.productItems[index].isCart) {
+      if (existingCall == null) {
+        favList2.add(Data.productItems[index]);
+        AppPreferences.showSnackBar(
+          "Сагсанд нэмэгдлээ",
+          _key,
+        );
+      } else {
+        favList2.removeWhere(
+            (favCall) => favCall.id == Data.productItems[index].id);
+
+        AppPreferences.showSnackBar(
+          "Сагснаас хасагдлаа",
+          _key,
+        );
+      }
+    }
+
+    String encodeCalls = json.encode(
+      favList2.map<Map<String, dynamic>>((call) => call.toMap(call)).toList(),
+    );
+    // print(encodeCalls);
+    prefs.setString(prebString, encodeCalls);
+
+    checkCalls = prefs.getString(prebString) ?? null;
+
+    if (checkCalls != null) {
+      favList = (json.decode(checkCalls) as List)
+          .map((call) => ProductModel.fromJson(call))
+          .toList();
+    }
+  }
 
   checkFilter2(String id) {
     if (id != null) {
@@ -507,30 +572,6 @@ class _HomeState extends State<Home> {
                                                     .price ==
                                                 null)
                                               Text(""),
-                                            Padding(
-                                              padding: EdgeInsets.only(
-                                                top: height * 0.02,
-                                              ),
-                                              child: ClipRRect(
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                  14.0,
-                                                ),
-                                                child: Container(
-                                                  height: height * 0.048,
-                                                  width: height * 0.048,
-                                                  child: Material(
-                                                    color: Colors.grey[600],
-                                                    child: Center(
-                                                      child: Icon(
-                                                        Icons.add,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
                                           ],
                                         ),
                                       ),
@@ -548,13 +589,13 @@ class _HomeState extends State<Home> {
                               color: Colors.transparent,
                               child: InkWell(
                                 onTap: () {
-                                  Navigator.pushNamed(
+                                  Navigator.push(
                                     context,
-                                    "/product_detail",
-                                    arguments: {
-                                      'index2': index2,
-                                      'index': index
-                                    },
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductDetail(
+                                        index: index2,
+                                      ),
+                                    ),
                                   );
                                 },
                                 child: Container(
@@ -563,6 +604,46 @@ class _HomeState extends State<Home> {
                                   height:
                                       MediaQuery.of(context).size.height * 0.3,
                                   child: Text(""),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width * 0.42,
+                            height: MediaQuery.of(context).size.height * 0.3,
+                            child: Align(
+                              alignment: Alignment.bottomRight,
+                              child: Padding(
+                                padding: EdgeInsets.only(
+                                  bottom: height * 0.02,
+                                  right: width * 0.04,
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    14.0,
+                                  ),
+                                  child: Material(
+                                    color: Colors.transparent,
+                                    child: InkWell(
+                                      onTap: () {
+                                        Data.productItems[index].isCart = true;
+                                        _saveProductCart(index);
+                                      },
+                                      child: Container(
+                                        height: height * 0.048,
+                                        width: height * 0.048,
+                                        child: Material(
+                                          color: Colors.grey[600],
+                                          child: Center(
+                                            child: Icon(
+                                              Icons.add,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
