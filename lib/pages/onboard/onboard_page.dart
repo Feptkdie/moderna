@@ -15,11 +15,13 @@ class _OnboardPageState extends State<OnboardPage> {
   checkUserData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // prefs.clear();
-    var user = prefs.getString("user") ?? null;
-    print("user = " + user);
-    if (user != "null") {
-      Data.user = user;
-      Navigator.pushReplacementNamed(context, "/home_page");
+    if (prefs.containsKey("user")) {
+      var user = prefs.getString("user") ?? "null";
+      print("user = " + user);
+      if (user != "null") {
+        Data.user = user;
+        Navigator.pushReplacementNamed(context, "/home_page");
+      }
     }
   }
 

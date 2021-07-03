@@ -139,29 +139,31 @@ class _HomeState extends State<Home> {
     // prefs.clear();
 
     prebString += _user["user"]["id"].toString();
-    String checkCart = (prefs.getString(prebString) ?? "null");
+    if (prefs.containsKey(prebString)) {
+      String checkCart = (prefs.getString(prebString) ?? "null");
 
-    if (checkCart != "null") {
-      cartList = (json.decode(checkCart) as List)
-          .map((call) => ProductModel.fromJson(call))
-          .toList();
-    }
-
-    for (int i = 0; i < Data.productItems.length; i++) {
-      var existingCart = cartList.firstWhere(
-          (favCall) => favCall.id == Data.productItems[i].id,
-          orElse: () => null);
-
-      if (existingCart != null) {
-        Data.productItems[i].isCart = true;
-      } else {
-        Data.productItems[i].isCart = false;
+      if (checkCart != "null") {
+        cartList = (json.decode(checkCart) as List)
+            .map((call) => ProductModel.fromJson(call))
+            .toList();
       }
-    }
 
-    setState(() {
-      _isCartCheck = true;
-    });
+      for (int i = 0; i < Data.productItems.length; i++) {
+        var existingCart = cartList.firstWhere(
+            (favCall) => favCall.id == Data.productItems[i].id,
+            orElse: () => null);
+
+        if (existingCart != null) {
+          Data.productItems[i].isCart = true;
+        } else {
+          Data.productItems[i].isCart = false;
+        }
+      }
+
+      setState(() {
+        _isCartCheck = true;
+      });
+    }
   }
 
   @override
