@@ -16,16 +16,25 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-  final _user = json.decode(Data.user);
+  var _user;
+  bool isCheck = false;
 
-  Future<void> _removeUserData() async {
+  _removeUserData() async {
     final prefs = await SharedPreferences.getInstance();
-    prefs.setString("user", null);
+    prefs.setString("user", "null");
+  }
+
+  initUserData() {
+    if (Data.user != null) _user = json.decode(Data.user);
+    setState(() {
+      isCheck = true;
+    });
   }
 
   @override
   void initState() {
-    print(Data.user);
+    // print(Data.user);
+    initUserData();
     super.initState();
   }
 
@@ -39,7 +48,18 @@ class _ProfilePageState extends State<ProfilePage> {
         child: Column(
           children: <Widget>[
             _top(height, width),
-            _information(height, width),
+            if (isCheck) _information(height, width),
+            if (!isCheck)
+              Align(
+                alignment: Alignment.center,
+                child: Padding(
+                  padding: EdgeInsets.only(top: height * 0.3),
+                  child: CircularProgressIndicator(
+                    valueColor: new AlwaysStoppedAnimation<Color>(Colors.blue),
+                    strokeWidth: 2.0,
+                  ),
+                ),
+              ),
           ],
         ),
       ),

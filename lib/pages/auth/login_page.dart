@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:moderna/helpers/app_preferences.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
 import '../../constants.dart';
 
 class LoginPage extends StatefulWidget {
@@ -16,22 +14,6 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
   final phoneTEC = new TextEditingController();
-
-  _checkIsAlreadyLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final user = prefs.getString("user");
-    if (user != null) {
-      print(user.toString());
-      Data.user = user;
-      Navigator.pushReplacementNamed(context, "/home_page");
-    }
-  }
-
-  @override
-  void initState() {
-    _checkIsAlreadyLogin();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -22,43 +22,18 @@ class _CartPageState extends State<CartPage> {
   int count = 1;
   List<ProductModel> favList2 = [];
   bool isCheck = false;
-  final _user = json.decode(Data.user);
-
-  Future<void> _saveProduct(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    String prebString = "cart";
-    // prefs.clear();
-
-    if (_user != null) prebString += _user["user"]["id"].toString();
-
-    var existingCall = favList2.firstWhere(
-        (favCall) => favCall.id == favList2[index].id,
-        orElse: () => null);
-
-    if (existingCall != null) {
-      favList2.removeWhere((favCall) => favCall.id == favList2[index].id);
-    }
-
-    String encodeCalls = json.encode(
-      favList2.map<Map<String, dynamic>>((call) => call.toMap(call)).toList(),
-    );
-    // print(encodeCalls);
-
-    setState(() {
-      prefs.setString(prebString, encodeCalls);
-    });
-  }
+  var _user;
 
   Future<void> _isFavoriteCheck() async {
     final prefs = await SharedPreferences.getInstance();
     String prebString = "cart";
     // prefs.clear();
 
-    if (_user != null) prebString += _user["user"]["id"].toString();
+    if (_user != "null") prebString += _user["user"]["id"].toString();
 
     String checkCalls = prefs.getString(prebString) ?? null;
 
-    if (checkCalls != null) {
+    if (checkCalls != "null") {
       favList2 = (json.decode(checkCalls) as List)
           .map((call) => ProductModel.fromJson(call))
           .toList();
@@ -74,12 +49,13 @@ class _CartPageState extends State<CartPage> {
     String prebString = "cart";
     // prefs.clear();
 
-    if (_user != null) prebString += _user["user"]["id"].toString();
-    prefs.setString(prebString, null);
+    if (_user != "null") prebString += _user["user"]["id"].toString();
+    prefs.setString(prebString, "null");
   }
 
   @override
   void initState() {
+    if (Data.user != null) _user = json.decode(Data.user);
     _isFavoriteCheck();
     super.initState();
   }
@@ -89,6 +65,7 @@ class _CartPageState extends State<CartPage> {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return WillPopScope(
+      // ignore: missing_return
       onWillPop: () {
         for (int i = 0; i < Data.productItems.length; i++) {
           Data.productItems[i].isCart = false;
@@ -432,4 +409,29 @@ class _CartPageState extends State<CartPage> {
           ),
         ],
       );
+
+  Future<void> _saveProduct(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    String prebString = "cart";
+    // prefs.clear();
+
+    if (_user != "null") prebString += _user["user"]["id"].toString();
+
+    var existingCall = favList2.firstWhere(
+        (favCall) => favCall.id == favList2[index].id,
+        orElse: () => null);
+
+    if (existingCall != null) {
+      favList2.removeWhere((favCall) => favCall.id == favList2[index].id);
+    }
+
+    String encodeCalls = json.encode(
+      favList2.map<Map<String, dynamic>>((call) => call.toMap(call)).toList(),
+    );
+    // print(encodeCalls);
+
+    setState(() {
+      prefs.setString(prebString, encodeCalls);
+    });
+  }
 }

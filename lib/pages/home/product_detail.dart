@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:moderna/constants.dart';
-import 'package:moderna/helpers/app_preferences.dart';
 import 'package:moderna/models/product_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -24,6 +23,7 @@ class _ProductDetailState extends State<ProductDetail> {
   final _user = json.decode(Data.user);
   List<ProductModel> favList;
   List<ProductModel> favList2;
+  List<ProductModel> cartList;
 
   Future<void> _saveProduct(int index) async {
     final prefs = await SharedPreferences.getInstance();
@@ -79,9 +79,9 @@ class _ProductDetailState extends State<ProductDetail> {
     if (_user != null) prebString += _user["user"]["id"].toString();
 
     List<ProductModel> favList2 = <ProductModel>[];
-    String checkCalls2 = (prefs.getString(prebString) ?? null);
+    String checkCalls2 = (prefs.getString(prebString) ?? "null");
 
-    if (checkCalls2 != null) {
+    if (checkCalls2 != "null") {
       favList2 = (json.decode(checkCalls2) as List)
           .map((call) => ProductModel.fromJson(call))
           .toList();
@@ -91,24 +91,18 @@ class _ProductDetailState extends State<ProductDetail> {
         (favCall) => favCall.id == Data.productItems[index].id,
         orElse: () => null);
 
-    if (Data.productItems[index].isCart) {
-      if (existingCall == null) {
-        favList2.add(Data.productItems[index]);
-        AppPreferences.showSnackBar(
-          "Сагсанд нэмэгдлээ",
-          scaffoldKey,
-        );
-      }
+    if (existingCall == null) {
+      favList2.add(Data.productItems[index]);
+      setState(() {
+        Data.productItems[widget.index].isCart = true;
+      });
     } else {
-      if (existingCall != null) {
-        favList2.removeWhere(
-            (favCall) => favCall.id == Data.productItems[index].id);
+      favList2
+          .removeWhere((favCall) => favCall.id == Data.productItems[index].id);
 
-        AppPreferences.showSnackBar(
-          "Сагснаас хасагдлаа",
-          scaffoldKey,
-        );
-      }
+      setState(() {
+        Data.productItems[widget.index].isCart = false;
+      });
     }
 
     String encodeCalls = json.encode(
@@ -116,14 +110,6 @@ class _ProductDetailState extends State<ProductDetail> {
     );
     // print(encodeCalls);
     prefs.setString(prebString, encodeCalls);
-
-    checkCalls = prefs.getString(prebString) ?? null;
-
-    if (checkCalls != null) {
-      favList = (json.decode(checkCalls) as List)
-          .map((call) => ProductModel.fromJson(call))
-          .toList();
-    }
   }
 
   Future<void> _isFavoriteCheck() async {
@@ -150,16 +136,38 @@ class _ProductDetailState extends State<ProductDetail> {
         Data.productItems[widget.index].isFavorite = false;
       }
     }
+
+    String prebString2 = "cart";
+    // prefs.clear();
+
+    if (_user != null) prebString2 += _user["user"]["id"].toString();
+
+    String checkCalls2 = prefs.getString(prebString2) ?? "null";
+
+    if (checkCalls2 != "null") {
+      cartList = (json.decode(checkCalls2) as List)
+          .map((call) => ProductModel.fromJson(call))
+          .toList();
+
+      var existingCall2 = cartList.firstWhere(
+          (favCall) => favCall.id == Data.productItems[widget.index].id,
+          orElse: () => null);
+
+      if (existingCall2 != null) {
+        Data.productItems[widget.index].isCart = true;
+      } else {
+        Data.productItems[widget.index].isCart = false;
+      }
+    }
+
     setState(() {
       isCheck = true;
     });
-    print(checkCalls.toString());
   }
 
   @override
   void initState() {
     _isFavoriteCheck();
-    Data.productItems[widget.index].isCart = false;
     super.initState();
   }
 
@@ -168,11 +176,10 @@ class _ProductDetailState extends State<ProductDetail> {
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     return WillPopScope(
+      // ignore: missing_return
       onWillPop: () {
-        for (int i = 0; i < Data.productItems.length; i++) {
-          Data.productItems[i].isCart = false;
-        }
-        Navigator.pop(context);
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            "/home_page", (Route<dynamic> route) => false);
       },
       child: Scaffold(
         key: scaffoldKey,
@@ -200,36 +207,67 @@ class _ProductDetailState extends State<ProductDetail> {
             top: height * 0.03,
             bottom: height * 0.08,
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(
-              18.0,
-            ),
-            child: Container(
-              height: height * 0.072,
-              width: width * 0.9,
-              child: Material(
-                color: Colors.black,
-                child: InkWell(
-                  onTap: () {
-                    if (Data.productItems[widget.index].isCart)
-                      Data.productItems[widget.index].isCart = false;
-                    else
-                      Data.productItems[widget.index].isCart = true;
-                    _saveProductCart(widget.index);
-                  },
-                  child: Center(
-                    child: Text(
-                      "Сагсанд нэмэх",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w300,
-                        fontSize: MediaQuery.of(context).size.height * 0.03,
+          child: Column(
+            children: [
+              if (Data.productItems[widget.index].isCart)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    18.0,
+                  ),
+                  child: Container(
+                    height: height * 0.072,
+                    width: width * 0.9,
+                    child: Material(
+                      color: Colors.black,
+                      child: InkWell(
+                        onTap: () {
+                          _saveProductCart(widget.index);
+                        },
+                        child: Center(
+                          child: Text(
+                            "Сагснаас хасах",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w300,
+                              fontSize:
+                                  MediaQuery.of(context).size.height * 0.03,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
+              if (!Data.productItems[widget.index].isCart)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    18.0,
+                  ),
+                  child: Container(
+                    height: height * 0.072,
+                    width: width * 0.9,
+                    child: Material(
+                      color: Colors.black,
+                      child: InkWell(
+                        onTap: () {
+                          _saveProductCart(widget.index);
+                        },
+                        child: Center(
+                          child: Text(
+                            "Сагсанд нэмэх",
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w300,
+                              fontSize:
+                                  MediaQuery.of(context).size.height * 0.03,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       );
@@ -477,10 +515,8 @@ class _ProductDetailState extends State<ProductDetail> {
                   IconButton(
                     icon: Icon(Icons.arrow_back_ios),
                     onPressed: () {
-                      for (int i = 0; i < Data.productItems.length; i++) {
-                        Data.productItems[i].isCart = false;
-                      }
-                      Navigator.pop(context);
+                      Navigator.of(context).pushNamedAndRemoveUntil(
+                          "/home_page", (Route<dynamic> route) => false);
                     },
                     color: Colors.black,
                   ),

@@ -1,7 +1,7 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../constants.dart';
 
 class OnboardPage extends StatefulWidget {
   static String routeName = "/onboard_page";
@@ -12,23 +12,20 @@ class OnboardPage extends StatefulWidget {
 }
 
 class _OnboardPageState extends State<OnboardPage> {
-  // File _image;
-  // final picker = ImagePicker();
-  // Future getImage() async {
-  //   final pickedFile = await picker.getImage(source: ImageSource.camera);
-
-  //   setState(() {
-  //     if (pickedFile != null) {
-  //       _image = File(pickedFile.path);
-  //     } else {
-  //       print('No image selected.');
-  //     }
-  //   });
-  // }
+  checkUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // prefs.clear();
+    var user = prefs.getString("user") ?? null;
+    print("user = " + user);
+    if (user != "null") {
+      Data.user = user;
+      Navigator.pushReplacementNamed(context, "/home_page");
+    }
+  }
 
   @override
   void initState() {
-    // getImage();
+    checkUserData();
     super.initState();
   }
 

@@ -25,7 +25,7 @@ class LoginButton extends StatefulWidget {
 class _LoginButtonState extends State<LoginButton> {
   bool isLoad = false;
 
-  Future<dynamic> _saveUserData(var user) async {
+  Future<void> _saveUserData(var user) async {
     print("user data = " + user.toString());
     final prefs = await SharedPreferences.getInstance();
 
