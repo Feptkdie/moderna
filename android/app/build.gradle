@@ -1,0 +1,115 @@
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterRoot = localProperties.getProperty('flutter.sdk')
+if (flutterRoot == null) {
+    throw new FileNotFoundException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
+
+android {
+    compileSdkVersion 30
+
+    packagingOptions {
+        pickFirst 'lib/armeabi-v7a/libarpresto_api.so'
+        pickFirst 'lib/arm64-v8a/libarpresto_api.so'
+        pickFirst 'lib/armeabi-v7a/libarcore_sdk_jni.so'
+        pickFirst 'lib/arm64-v8a/libarcore_sdk_jni.so'
+        pickFirst 'lib/armeabi-v7a/libarcore_sdk_c.so'
+        pickFirst 'lib/armeabi-v7a/libil2cpp.so'
+        pickFirst 'lib/arm64-v8a/libUnityARCore.so'
+        pickFirst 'lib/armeabi-v7a/libUnityARCore.so'
+        pickFirst 'lib/arm64-v8a/libarcore_sdk_c.so'
+        pickFirst 'lib/arm64-v8a/libil2cpp.so'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    lintOptions {
+        disable 'InvalidPackage'
+        checkReleaseBuilds false
+        abortOnError false
+        checkDependencies true
+    }
+
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId "com.example.mod"
+        minSdkVersion 28
+        targetSdkVersion 30
+        versionCode flutterVersionCode.toInteger()
+        versionName kotlin_version
+        multiDexEnabled true
+    }
+    buildTypes {
+        release {
+            
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig signingConfigs.debug
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        profile {
+            signingConfig signingConfigs.debug
+        }
+        innerTest {
+            matchingFallbacks = ['debug', 'release']
+        }
+    }
+}
+
+dependencies {
+    // implementation project(':unityLibrary')
+    // implementation project(':arcore_client')
+    // implementation project(':UnityARCore')
+    implementation project(':unityLibrary')
+    
+    // implementation 'com.android.support:multidex:1.0.3'
+
+    // implementation 'com.google.ar:core:1.24.0'
+
+    //noinspection GradleDependency
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    // Provides ArFragment, and other UX resources.
+    // implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.8.0'
+
+    // Alternatively, use ArSceneView without the UX dependency.
+    // implementation 'com.google.ar.sceneform:core:1.8.0'
+}
+
+flutter {
+    source '../..'
+}
+
+
+
+
+
